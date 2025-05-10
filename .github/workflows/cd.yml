@@ -1,47 +1,26 @@
-name: CD
-"on":
+name: Deploy data and images to GitHub Pages
+
+on:
   push:
     branches:
       - main
+
 jobs:
-  deploy-website:
+  deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout Repo
         uses: actions/checkout@v3
-      - name: Installing Dependencies
-        working-directory: ./website
-        run: yarn install
-      - name: Build
-        working-directory: ./website
-        run: yarn build
-      - name: Install Firebase Tools
-        working-directory: ./website
-        run: npm install -g firebase-tools
-      - name: Deploying to Firebase
-        working-directory: ./website
-        run: firebase deploy --token "${{ secrets.FIREBASE_SECRET }}"
-  deploy-api:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-      - name: Installing Dependencies
-        working-directory: ./api/functions
-        run: yarn install
-      - name: Install Firebase Tools
-        run: npm install -g firebase-tools
-      - name: Deploying to Firebase
-        working-directory: ./api/functions
-        run: firebase deploy --token "${{ secrets.FIREBASE_SECRET }}"
-  test-data:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repo
-        uses: actions/checkout@v3
-      - name: Installing Dependencies
-        working-directory: ./tests
-        run: yarn install
-      - name: Test
-        working-directory: ./tests
-        run: yarn test
+
+      - name: Prepare deploy folder
+        run: |
+          mkdir deploy
+          cp -r data deploy/data
+          cp -r images deploy/images
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./deploy
